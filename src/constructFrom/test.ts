@@ -1,9 +1,9 @@
 import { TZDate, tz } from "@date-fns/tz";
 import { UTCDate } from "@date-fns/utc";
 import { describe, expect, it } from "vitest";
-import { constructFrom } from ".";
-import { assertType } from "../_lib/test";
-import type { ContextOptions, DateArg } from "../types";
+import { constructFrom } from "./index.js";
+import { assertType } from "../_lib/test/index.js";
+import type { ContextOptions, DateArg } from "../types.js";
 
 describe("constructFrom", () => {
   it("should create a new Date instance using the constructor from the reference date", () => {
@@ -88,5 +88,20 @@ describe("constructFrom", () => {
     ) {
       constructFrom(options?.in || arg, arg);
     }
+  });
+
+  describe("edge cases", () => {
+    it("does not trip over null", () => {
+      const value = 1635244800000; // October 26, 2023
+      // @ts-expect-error - We want to pass null here
+      const result = constructFrom(null, value);
+      expect(result instanceof Date).toBe(true);
+      expect(result.getTime()).toEqual(value);
+    });
+
+    it("returns invalid date for invalid arguments consistently", () => {
+      expect(+constructFrom(undefined, NaN)).toBe(NaN);
+      expect(+constructFrom(tz("Asia/Singapore"), NaN)).toBe(NaN);
+    });
   });
 });
